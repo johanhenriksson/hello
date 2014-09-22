@@ -12,6 +12,7 @@ var parser = function() {
             if (tok.type !== 'id')
                 throw "Element type identifier expected";
 
+            console.log('element');
             var element = { 
                 type: tok.string,
                 children: [ ],
@@ -45,6 +46,7 @@ var parser = function() {
 
         string: function(tokens) 
         {
+            console.log('string');
             var tok = tokens.next();
             if (tok.type != 'string')
                 throw "Expected string";
@@ -65,6 +67,7 @@ var parser = function() {
         /** Parse element block */
         block: function(tokens) 
         {
+            console.log('block');
             /* Opening brace */
             var tok = tokens.next();
             if (tok.type !== 'lbrace') 
@@ -75,6 +78,9 @@ var parser = function() {
                 switch(tok.type) {
                     case 'id': /* nested element */
                         block.push(this.element(tokens));
+                        break;
+                    default:
+                        console.log(tok.type);
                         break;
                 }
                 tok = tokens.peek();

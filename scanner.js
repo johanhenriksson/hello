@@ -13,6 +13,10 @@ var scanner = function(file) {
         index: 0,
         length: 0,
 
+        delimiters: [
+            ' ', '\t', '\n', '{', '}', '(', ')',
+        ],
+
         /** Read source file */
         read: function(callback) {
             fs.readFile(this.path, 'utf8', _.bind(function(err, data) {
@@ -23,6 +27,16 @@ var scanner = function(file) {
             }, this));
         },
 
+        next: function() {
+            return this.text[this.index++];
+        },
+
+        peek :function(steps) {
+            if (steps === undefined || steps < 1)
+                steps = 1;
+            return this.text[this.index + steps - 1];
+        },
+
         scan: function(text) 
         {
             var list = [ ];
@@ -30,35 +44,67 @@ var scanner = function(file) {
             this.text  = text;
             this.length = text.length;
 
-            while(this.index < this.length) 
-            {
-                var c = this.text[this.index++]; 
-                var chars = [ ];
-                
-                /* Skip whitespace */
-                while (isEmpty(c))
-                    c = text[this.index++]; 
-
-                /* String literals */
-                if (c === '"') {
-                    list.push(this.scan_string());
-                }
-                else {
-                    /* Read until next whitespace */
-                    while (!isEmpty(c)) {
-                        chars.push(c);
-                        c = text[this.index++]; 
-                    }
-
-                    var str = chars.join('');
-                    list.push({
-                        string: str,
-                        type: this.__getType(str),
-                    });
-                }
+            while(this.index < this.length) {
+                this.scan_whitespace();
+                list.push(this.scan_token());
             }
 
+            console.log('scan completed');
             return new tokens(list);
+        },
+
+        scan_token: function()
+        {
+            var c = this.peek();
+            switch(c) {
+                case '"':
+                    console.log('string literal');
+                    return this.scan_string();
+
+                case '{': return this.scan_terminal('lbrace');
+                case '}': return this.scan_terminal('rbrace');
+                case '(': return this.scan_terminal('lparam');
+                case ')': return this.scan_terminal('rparam');
+            }
+
+            return this.scan_id();
+        },
+
+        scan_terminal: function(name) {
+            this.next();
+            return { type: name };
+        },
+
+        scan_id: function() 
+        {
+            var c, chars = [ ];
+            while (this.index < this.length) 
+            {
+                c = this.peek();
+                if (_.contains(this.delimiters, c)) 
+                    break;
+               
+                chars.push(this.next());
+            }
+
+            var str = chars.join('');
+            return {
+                string: str,
+                type: 'id'
+            };
+        },
+
+        /** Scan (and discard) whitespace */
+        scan_whitespace: function() {
+            var c = this.peek();
+            while (this.isWhitespace(c)) {
+                this.next(); // discard
+                c = this.peek();
+            }
+        },
+
+        isWhitespace: function(c) {
+            return c === ' ' || c === '\t' || c === '\r' || c === '\n';
         },
 
         /** Scan string literal */
@@ -66,11 +112,12 @@ var scanner = function(file) {
         {
             var chars = [ ], p = '';
 
-            var c = this.text[this.index++];
+            this.next(); // discard "
+            var c = this.next();
             while(!(c === '"') && (p !== '\\')) {
                 chars.push(c);
                 p = c;
-                c = this.text[this.index++];
+                c = this.next();
             }
 
             /* Return string literal token */
@@ -79,24 +126,7 @@ var scanner = function(file) {
                 type: 'string',
             };
         },
-
-        /** Attempt to resolve token type */
-        __getType: function(str) {
-            switch(str) {
-                case '': return 'empty';
-                case '{': return 'lbrace';
-                case '}': return 'rbrace';
-            }
-
-            /* Identifier */
-            var re = /[a-zA-Z][a-zA-Z0-9]*/;
-            if (re.test(str)) 
-                return 'id';
-
-            throw "Unknwon token: " + str;
-        }
     };
 }
-
 
 module.exports = scanner;

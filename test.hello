@@ -3,6 +3,12 @@ html {
         title "there"
     }
     body {
-        div p
+        div {
+            ul {
+                li "Item 1"
+                li "Item 2"
+                li "Item 3"
+            }
+        }
     }
 }
