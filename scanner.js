@@ -1,5 +1,6 @@
 fs = require('fs');
 _ = require('underscore');
+tokens = require('./tokens.js');
 
 function isEmpty(str) {
     return str.replace(/^\s+|\s+$/g, '').length == 0;
@@ -9,7 +10,6 @@ function isEmpty(str) {
 var scanner = function(file) {
     return {
         path: file,
-        text: "",
         index: 0,
         length: 0,
 
@@ -18,51 +18,66 @@ var scanner = function(file) {
             fs.readFile(this.path, 'utf8', _.bind(function(err, data) {
                 if (err)
                     return console.log('FS error: ' + err);
-                this.text = data;
-                this.length = data.length;
 
-                callback(this);
+                callback(this.scan(data));
             }, this));
         },
 
-        done: function() {
-            return this.index >= this.length;
-        },
-
-        next: function() {
-            return this.__readToken();
-        },
-
-        peek: function() {
-            var i = this.index;
-            var tok = this.__readToken();
-            this.index = i;
-            return tok;
-        },
-
-        __readToken: function() 
+        scan: function(text) 
         {
-            var c = this.text[this.index++]; 
-            var chars = [ ];
-            
-            /* Skip whitespace */
-            while (isEmpty(c))
-                c = this.text[this.index++]; 
+            var list = [ ];
+            this.index = 0,
+            this.text  = text;
+            this.length = text.length;
 
-            /* Read until next whitespace */
-            while (!isEmpty(c)) {
+            while(this.index < this.length) 
+            {
+                var c = this.text[this.index++]; 
+                var chars = [ ];
+                
+                /* Skip whitespace */
+                while (isEmpty(c))
+                    c = text[this.index++]; 
+
+                /* String literals */
+                if (c === '"') {
+                    list.push(this.scan_string());
+                }
+                else {
+                    /* Read until next whitespace */
+                    while (!isEmpty(c)) {
+                        chars.push(c);
+                        c = text[this.index++]; 
+                    }
+
+                    var str = chars.join('');
+                    list.push({
+                        string: str,
+                        type: this.__getType(str),
+                    });
+                }
+            }
+
+            return new tokens(list);
+        },
+
+        /** Scan string literal */
+        scan_string: function() 
+        {
+            var chars = [ ], p = '';
+
+            var c = this.text[this.index++];
+            while(!(c === '"') && (p !== '\\')) {
                 chars.push(c);
-                c = this.text[this.index++]; 
+                p = c;
+                c = this.text[this.index++];
             }
 
-            var str = chars.join('');
-            var type = this.__getType(str);
-
-            /* Return token */
+            /* Return string literal token */
             return {
-                string: str,
-                type: type,
-            }
+                string: chars.join(''),
+                type: 'string',
+            };
         },
 
         /** Attempt to resolve token type */
@@ -82,5 +97,6 @@ var scanner = function(file) {
         }
     };
 }
+
 
 module.exports = scanner;

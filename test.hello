@@ -1,9 +1,8 @@
 html {
     head {
-        title
+        title "there"
     }
     body {
-        div
-        p
+        div p
     }
 }

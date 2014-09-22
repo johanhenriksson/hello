@@ -2,13 +2,13 @@
 /** hello parser */
 var parser = function() {
     return {
-        parse: function(scanner) {
-            return this.element(scanner);
+        parse: function(tokens) {
+            return this.element(tokens);
         },
 
         /** Parse element */
-        element: function(scanner) {
-            var tok = scanner.next();
+        element: function(tokens) {
+            var tok = tokens.next();
             if (tok.type !== 'id')
                 throw "Element type identifier expected";
 
@@ -22,21 +22,51 @@ var parser = function() {
                 close: function() { return "</" + this.type + ">"; },
             };
 
-            var next = scanner.peek();
+            var next = tokens.peek();
             switch(next.type) {
-                case 'lbrace': /* Element block! */
-                    element.children = this.block(scanner);
+                case 'lparam': /* Param block */
+                    tokens.next(); // throw (
+                    element.class = this.string(tokens);
+                    tokens.next(); // throw )
+                    break;
+                case 'lbrace': /* Element block */
+                    element.children = this.block(tokens);
+                    break;
+                case 'string': /* Text element */
+                    element.children = [ this.string(tokens) ];
+                    break;
+                case 'id': /* Single child */
+                    element.children = [ this.element(tokens) ];
                     break;
             }
 
             return element;
         },
 
+        string: function(tokens) 
+        {
+            var tok = tokens.next();
+            if (tok.type != 'string')
+                throw "Expected string";
+
+            /* Return text literal */
+            return  { 
+                type: 'text',
+                text: tok.string,
+                children: [ ],
+                print: function() {
+                    return "Text '" + this.text + "'";
+                },
+                open:  function() { return this.text; },
+                close: function() { return ""; },
+            };
+        },
+
         /** Parse element block */
-        block: function(scanner) 
+        block: function(tokens) 
         {
             /* Opening brace */
-            var tok = scanner.next();
+            var tok = tokens.next();
             if (tok.type !== 'lbrace') 
                 throw "How did you get here?";
 
@@ -44,13 +74,13 @@ var parser = function() {
             while(tok.type !== 'rbrace') {
                 switch(tok.type) {
                     case 'id': /* nested element */
-                        block.push(this.element(scanner));
+                        block.push(this.element(tokens));
                         break;
                 }
-                tok = scanner.peek();
+                tok = tokens.peek();
             }
 
-            scanner.next(); /* Closing brace */
+            tokens.next(); /* Closing brace */
             return block;
         }
     };

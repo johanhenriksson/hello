@@ -31,8 +31,8 @@ function print_ast(ast, level) {
 }
 
 /* Perform async compilation */
-scan.read(function(scanner) {
+scan.read(function(tokens) {
     /* Parse */
-    var ast = parser.parse(scanner);
+    var ast = parser.parse(tokens);
     print_ast(ast);
 });
