@@ -13,6 +13,14 @@ var tokens = function(list) {
             return this.tokens[this.index++];
         },
 
+        accept: function(type) 
+        {
+            var token = this.peek();
+            if (token.type !== type)
+                throw "Expected " + type + ", got " + token.type;
+            return this.next();
+        },
+
         peek: function(steps) {
             if (steps === undefined || steps < 1)
                 steps = 1;

@@ -49,7 +49,6 @@ var scanner = function(file) {
                 list.push(this.scan_token());
             }
 
-            console.log('scan completed');
             return new tokens(list);
         },
 
@@ -57,16 +56,12 @@ var scanner = function(file) {
         {
             var c = this.peek();
             switch(c) {
-                case '"':
-                    console.log('string literal');
-                    return this.scan_string();
-
+                case '"': return this.scan_string();
                 case '{': return this.scan_terminal('lbrace');
                 case '}': return this.scan_terminal('rbrace');
                 case '(': return this.scan_terminal('lparam');
                 case ')': return this.scan_terminal('rparam');
             }
-
             return this.scan_id();
         },
 
@@ -97,14 +92,10 @@ var scanner = function(file) {
         /** Scan (and discard) whitespace */
         scan_whitespace: function() {
             var c = this.peek();
-            while (this.isWhitespace(c)) {
+            while (c === ' ' || c === '\t' || c === '\r' || c === '\n') {
                 this.next(); // discard
                 c = this.peek();
             }
-        },
-
-        isWhitespace: function(c) {
-            return c === ' ' || c === '\t' || c === '\r' || c === '\n';
         },
 
         /** Scan string literal */

@@ -27,7 +27,9 @@ function print_ast(ast, level) {
         });
     }
 
-    console.log(space + ast.close());
+    var close = ast.close();
+    if (close.length > 0)
+        console.log(space + ast.close());
 }
 
 /* Perform async compilation */

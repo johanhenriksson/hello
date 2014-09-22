@@ -1,6 +1,8 @@
+element = require('./elements/element.js');
 
 /** hello parser */
-var parser = function() {
+var parser = function() 
+{
     return {
         parse: function(tokens) {
             return this.element(tokens);
@@ -10,43 +12,33 @@ var parser = function() {
         element: function(tokens) {
             var tok = tokens.next();
             if (tok.type !== 'id')
-                throw "Element type identifier expected";
+                throw "Element parse error: type identifier expected";
 
-            console.log('element');
-            var element = { 
-                type: tok.string,
-                children: [ ],
-                print: function() {
-                    return "Element " + this.type;
-                },
-                open:  function() { return "<"  + this.type + ">"; },
-                close: function() { return "</" + this.type + ">"; },
-            };
-
+            var el = new element(tok.string);
             var next = tokens.peek();
             switch(next.type) {
                 case 'lparam': /* Param block */
-                    tokens.next(); // throw (
-                    element.class = this.string(tokens);
-                    tokens.next(); // throw )
+                    tokens.accept('lparam'); 
+                    el.class = this.string(tokens);
+                    console.log('class ' + el.class);
+                    tokens.next('rparam'); 
                     break;
                 case 'lbrace': /* Element block */
-                    element.children = this.block(tokens);
+                    el.children = this.block(tokens);
                     break;
                 case 'string': /* Text element */
-                    element.children = [ this.string(tokens) ];
+                    el.children = [ this.string(tokens) ];
                     break;
                 case 'id': /* Single child */
-                    element.children = [ this.element(tokens) ];
+                    el.children = [ this.element(tokens) ];
                     break;
             }
 
-            return element;
+            return el;
         },
 
         string: function(tokens) 
         {
-            console.log('string');
             var tok = tokens.next();
             if (tok.type != 'string')
                 throw "Expected string";
@@ -67,26 +59,23 @@ var parser = function() {
         /** Parse element block */
         block: function(tokens) 
         {
-            console.log('block');
-            /* Opening brace */
-            var tok = tokens.next();
-            if (tok.type !== 'lbrace') 
-                throw "How did you get here?";
+            tokens.accept('lbrace');
 
             var block = [ ];
-            while(tok.type !== 'rbrace') {
-                switch(tok.type) {
+            var token = tokens.peek();
+            while(token.type !== 'rbrace') {
+                switch(token.type) {
                     case 'id': /* nested element */
                         block.push(this.element(tokens));
                         break;
                     default:
-                        console.log(tok.type);
+                        console.log('block weird ' + tok.type);
                         break;
                 }
-                tok = tokens.peek();
+                token = tokens.peek();
             }
 
-            tokens.next(); /* Closing brace */
+            tokens.accept('rbrace');
             return block;
         }
     };
