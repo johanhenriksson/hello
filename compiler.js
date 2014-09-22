@@ -21,14 +21,13 @@ function print_ast(ast, level) {
     console.log(space + ast.open());
 
     /* Print children */
-    if (ast.children.length > 0) {
+    if (ast.children !== undefined) {
         _.each(ast.children, function(child) {
             print_ast(child, level + 1);
         });
     }
 
-    var close = ast.close();
-    if (close.length > 0)
+    if (ast.close)
         console.log(space + ast.close());
 }
 

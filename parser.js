@@ -1,4 +1,6 @@
-element = require('./elements/element.js');
+ast_element   = require('./ast/element.js');
+ast_string    = require('./ast/string.js');
+ast_attribute = require('./ast/attribute.js');
 
 /** hello parser */
 var parser = function() 
@@ -9,51 +11,52 @@ var parser = function()
         },
 
         /** Parse element */
-        element: function(tokens) {
-            var tok = tokens.next();
-            if (tok.type !== 'id')
-                throw "Element parse error: type identifier expected";
+        element: function(tokens) 
+        {
+            var token   = tokens.accept('id');
+            var element = new ast_element(token.string);
 
-            var el = new element(tok.string);
             var next = tokens.peek();
-            switch(next.type) {
-                case 'lparam': /* Param block */
-                    tokens.accept('lparam'); 
-                    el.class = this.string(tokens);
-                    console.log('class ' + el.class);
-                    tokens.next('rparam'); 
+            
+            /* Parameter */
+            if (next === 'lparam') {
+                tokens.accept('lparam'); 
+                element.class = this.string(tokens);
+                console.log('class ' + el.class);
+                tokens.next('rparam'); 
+            }
+
+            switch(next.type) 
+            {
+                /* Element block */
+                case 'lbrace': 
+                    var rows = this.block(tokens);
+                    _.each(rows, function(row) {
+                        if (row.type == 'element')
+                            element.children.push(row);
+                        if (row.type == 'attribute')
+                            element.attr[row.name] = row.value;
+                    });
                     break;
-                case 'lbrace': /* Element block */
-                    el.children = this.block(tokens);
+
+                /* Text element */
+                case 'string': 
+                    element.children = [ this.string(tokens) ];
                     break;
-                case 'string': /* Text element */
-                    el.children = [ this.string(tokens) ];
-                    break;
-                case 'id': /* Single child */
-                    el.children = [ this.element(tokens) ];
+
+                /* Nested inline element */
+                case 'id': 
+                    element.children = [ this.element(tokens) ];
                     break;
             }
 
-            return el;
+            return element;
         },
 
         string: function(tokens) 
         {
-            var tok = tokens.next();
-            if (tok.type != 'string')
-                throw "Expected string";
-
-            /* Return text literal */
-            return  { 
-                type: 'text',
-                text: tok.string,
-                children: [ ],
-                print: function() {
-                    return "Text '" + this.text + "'";
-                },
-                open:  function() { return this.text; },
-                close: function() { return ""; },
-            };
+            var token = tokens.accept('string');
+            return new ast_string(token.string);
         },
 
         /** Parse element block */
@@ -64,19 +67,47 @@ var parser = function()
             var block = [ ];
             var token = tokens.peek();
             while(token.type !== 'rbrace') {
-                switch(token.type) {
-                    case 'id': /* nested element */
-                        block.push(this.element(tokens));
-                        break;
-                    default:
-                        console.log('block weird ' + tok.type);
-                        break;
-                }
+                block.push(this.row(tokens));
                 token = tokens.peek();
             }
 
             tokens.accept('rbrace');
             return block;
+        },
+
+        row: function(tokens)
+        {
+            /* Need to peek ahead two tokens to determine if its an element or an attribute row */
+            var current = tokens.peek(1);
+            var next    = tokens.peek(2);
+
+            switch(current.type)
+            {
+                /* ID or Attribute */
+                case 'id': 
+                    if (next.type === 'assign') 
+                        /* Attribute */
+                        return this.attribute(tokens);
+                    else
+                        /* Element */
+                        return this.element(tokens);
+
+                /* Plaintext element */
+                case 'string':
+                    return this.string(tokens);
+            }
+
+            throw "Block row parse error: Unexpected token " + current.type;
+        },
+
+        attribute: function(tokens)
+        {
+            var token = tokens.accept('id');
+            var name  = token.string;
+            tokens.accept('assign');
+            var value = this.string(tokens);
+
+            return new ast_attribute(name, value);
         }
     };
 }

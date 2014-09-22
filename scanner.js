@@ -14,7 +14,7 @@ var scanner = function(file) {
         length: 0,
 
         delimiters: [
-            ' ', '\t', '\n', '{', '}', '(', ')',
+            ' ', '\t', '\n', '{', '}', '(', ')', '=',
         ],
 
         /** Read source file */
@@ -61,6 +61,7 @@ var scanner = function(file) {
                 case '}': return this.scan_terminal('rbrace');
                 case '(': return this.scan_terminal('lparam');
                 case ')': return this.scan_terminal('rparam');
+                case '=': return this.scan_terminal('assign');
             }
             return this.scan_id();
         },
