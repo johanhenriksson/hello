@@ -1,3 +1,7 @@
+/*
+ * AST Node
+ * Attribute
+ */
 var attribute = function(name, value) 
 {
     return {

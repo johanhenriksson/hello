@@ -1,0 +1,6 @@
+div(clear)
+
+div(main) {
+    h1 "title"
+    p "content text goes here bla bla. blaaa"
+}

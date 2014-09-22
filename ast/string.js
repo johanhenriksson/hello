@@ -1,4 +1,7 @@
-
+/*
+ * AST Node
+ * String Element
+ */
 var string = function(text) {
     return  { 
         type: 'element',

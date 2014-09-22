@@ -1,5 +1,9 @@
-
-var element = function(type) {
+/*
+ * AST Node
+ * Html Element
+ */
+var element = function(type) 
+{
     return { 
         type: 'element',
         element: type,

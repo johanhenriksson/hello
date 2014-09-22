@@ -1,0 +1,9 @@
+html {
+    head { 
+        title "Hello"
+    }
+    body {
+        div
+        p "Hello"
+    }
+}
