@@ -1,0 +1,20 @@
+{
+    "name": "hello-templating",
+    "version": "0.1",
+
+    "author": {
+        "name": "Johan Henriksson",
+        "email": "johanhenriksson@live.com"
+    },
+
+    "repository": {
+        "type": "git", 
+        "url": "http://github.com/johanhenriksson/hello.git" 
+    },
+
+    "dependencies": {
+        "jquery": "*",
+        "underscore": "*",
+        "jsdom": "*"
+    }
+}
