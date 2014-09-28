@@ -12,9 +12,6 @@ document = jsdom();
 window = document.parentWindow;
 $ = require("jquery");
 
-/* Template requires */
-Element = require('./element.js'); 
-
 /* Load compiler output */
 var template_file = './output.js';
 template = require(template_file);

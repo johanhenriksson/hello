@@ -9,24 +9,12 @@ var string = function(text) {
         text: text,
 
         js: function() {
-            var code = [
-                'function() { ',
-                'var el = Element.make("text"); ',
-                'el.text="', this.text, '"; ',
-                'return el; ',
-                '}',
-            ];
-            return code.join('');
+            return [ 'function() { return Text.make("', this.text, '"); }', ].join('');
         },
 
         jsVal: function() {
             return ['"', this.text , '"'].join('');
         },
-
-        print: function() {
-            return "Text '" + this.text + "'";
-        },
-        open:  function() { return this.text; },
     };
 };
 
