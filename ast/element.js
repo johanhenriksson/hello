@@ -13,7 +13,6 @@ var element = function(type)
         children: [ ],
         attr: { },
 
-
         js: function(level) 
         {
             /* Create element */
