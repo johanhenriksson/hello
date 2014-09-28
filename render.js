@@ -17,6 +17,6 @@ var template_file = './output.js';
 template = require(template_file);
 
 /* Render call */
-var el = template();
+var el = template('hello');
 var output = el.render(document);
 console.log(output.html());

@@ -1,13 +1,78 @@
 ast_element   = require('./ast/element.js');
 ast_string    = require('./ast/string.js');
 ast_attribute = require('./ast/attribute.js');
+ast_template  = require('./ast/template.js');
 
 /** hello parser */
 var parser = function() 
 {
     return {
         parse: function(tokens) {
-            return this.element(tokens);
+            return this.template(tokens);
+        },
+
+        template: function(tokens) 
+        {
+            /* Template Name */
+            tokens.accept('func');
+            var id = tokens.next();
+            var template = new ast_template(id.string);
+
+            /* Parameters */
+            template.params = this.parameters(tokens);
+
+            /* Template block */
+            tokens.accept('lbrace');
+            var token = tokens.peek();
+            while(token.type !== 'rbrace') 
+            {
+                var element = this.element(tokens);
+
+                /* Set element parameters? */
+                element.params = template.params;
+
+                /* Push element */
+                template.elements.push(element);
+                token = tokens.peek();
+            }
+            tokens.accept('rbrace');
+
+            return template;
+        },
+
+        parameters: function(tokens) 
+        {
+            tokens.accept('lparam');
+            var vars = [ ];
+            var next = tokens.peek();
+            while(next.type !== 'rparam') {
+                var decl = this.varDecl(tokens);
+                vars.push(decl.name);
+                var next = tokens.peek();
+            }
+            tokens.accept('rparam');
+            return vars;
+        },
+
+        varDecl: function(tokens) {
+            tokens.accept('var');
+            var id = tokens.next();
+            return {
+                type: 'var_decl',
+                name: id.string,
+            };
+        },
+
+        varRef: function(tokens) {
+            tokens.accept('var');
+            var id = tokens.accept('id');
+            return {
+                type: 'var_ref',
+                name: id.string,
+                js: function() {
+                    return [ 'function(', this.name, ') { return Text.make(', this.name, '); }' ].join('');
+                },
+            };
         },
 
         /** Parse element */
@@ -37,6 +102,12 @@ var parser = function()
                         if (row.type == 'attribute')
                             element.attr[row.name] = row.value;
                     });
+                    break;
+
+                /* Variable Reference */
+                case 'var':
+                    var ref = this.varRef(tokens);
+                    element.children.push(ref);
                     break;
 
                 /* Text element */

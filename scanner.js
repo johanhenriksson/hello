@@ -14,7 +14,7 @@ var scanner = function(file) {
         length: 0,
 
         delimiters: [
-            ' ', '\t', '\n', '{', '}', '(', ')', '=',
+            ' ', '\t', '\n', '{', '}', '(', ')', '=', '$', '@', ':',
         ],
 
         /** Read source file */
@@ -52,6 +52,9 @@ var scanner = function(file) {
             return new tokens(list);
         },
 
+        scan_var_decl: function() {
+        },
+
         scan_token: function()
         {
             var c = this.peek();
@@ -62,6 +65,9 @@ var scanner = function(file) {
                 case '(': return this.scan_terminal('lparam');
                 case ')': return this.scan_terminal('rparam');
                 case '=': return this.scan_terminal('assign');
+                case '$': return this.scan_terminal('var');
+                case '@': return this.scan_terminal('func');
+                case ':': return this.scan_terminal('extends');
             }
             return this.scan_id();
         },
@@ -69,6 +75,11 @@ var scanner = function(file) {
         scan_terminal: function(name) {
             this.next();
             return { type: name };
+        },
+
+        scan_var: function() {
+            this.next(); // discard $
+            var id = this.scan_id();
         },
 
         scan_id: function() 

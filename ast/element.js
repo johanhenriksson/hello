@@ -11,15 +11,16 @@ var element = function(type)
         type: 'element',
         element: type,
         children: [ ],
+        params: [ ],
         attr: { },
 
-        js: function(level) 
+        js: function() 
         {
             /* Create element */
-            var code = [ 
-                'function(input) { ', 
-                'var el = Element.make("', this.element, '"); ', 
-            ];
+            var code = [ 'function(' ];
+            code.push(this.params.join(', '));
+            code.push(') { ');
+            code.push('var el = Element.make("' + this.element + '"); '); 
 
             /* Element Attributes */
             var hasAttr = false;
@@ -27,7 +28,7 @@ var element = function(type)
             _.each(this.attr, function(value, key) {
                 hasAttr = true;
                 attr = attr.concat([ key, ': ', value.jsVal(), ', ']);
-            });
+            }, this);
             attr.push('}; ');
             if (hasAttr)
                 code.push(attr.join(''));
@@ -38,9 +39,11 @@ var element = function(type)
             _.each(this.children, function(child) {
                 hasChild = true;
                 child_code.push('(');
-                child_code.push(child.js(level + 1));
-                child_code.push(')(input), ');
-            });
+                child_code.push(child.js());
+                child_code.push(')(');
+                child_code.push(this.params.join(''));
+                child_code.push('), ');
+            }, this);
             child_code.push(']; ');
             if (hasChild)
                 code.push(child_code.join(''));

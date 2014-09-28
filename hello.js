@@ -13,10 +13,5 @@ var parser = new Parser();
 scan.read(function(tokens) {
     /* Parse */
     var ast = parser.parse(tokens);
-    var code = [
-        "var Element = require('./lib/element.js'); ",
-        "var Text = require('./lib/text.js'); ",
-        'module.exports = ', ast.js(), ';',
-     ];
-    console.log(code.join(''));
+    console.log(ast.js());
 });
