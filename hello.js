@@ -36,6 +36,5 @@ function print_ast(ast, level) {
 scan.read(function(tokens) {
     /* Parse */
     var ast = parser.parse(tokens);
-    print_ast(ast);
     console.log(ast.js(0));
 });

@@ -15,6 +15,10 @@ var string = function(text) {
             return code.join('');
         },
 
+        jsVal: function() {
+            return ['"', this.text , '"'].join('');
+        },
+
         print: function() {
             return "Text '" + this.text + "'";
         },

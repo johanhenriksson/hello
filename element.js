@@ -1,14 +1,19 @@
 _ = require('underscore');
-Base = require('./base.js');
 
 /** Html Element */
-var Element = Base.make({
+var Element = {
     element: null,
     attributes: { },
     children: [ ],
 
-    append: function(children) {
-        this.children = this.children.concat(children); /* hah */
+    append: function(child) {
+        console.log('child: %j', child);
+        this.children.push(child); 
+        return this;
+    },
+
+    set: function(attr) {
+        this.attributes = _.extend(this.attributes, attr);
         return this;
     },
 
@@ -23,9 +28,16 @@ var Element = Base.make({
 
     print: function() {
         console.log('<' + this.element + '>');
-        _.each(this.children, function(child) { child.print(); });
+        if (this.children);
+            _.each(this.children, function(child) { child.print(); });
         console.log('</' + this.element + '>');
     },
-});
+
+    make: function(type) {
+        var elem = Object.create(Element);
+        elem.element = type;
+        return elem;
+    },
+};
 
 module.exports = Element;

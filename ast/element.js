@@ -13,60 +13,46 @@ var element = function(type)
         children: [ ],
         attr: { },
 
+
         js: function(level) 
         {
             var el = 'el' + level;
 
             /* Create element */
             var code = [ 
-                'function() {', 
-                'var ', el, ' = Element.make({ element: "', this.element, '" });', 
+                'function() { ', 
+                'var ', el, ' = Element.make("', this.element, '"); ', 
             ];
 
             /* Element Attributes */
-            code.concat([ el, '.attributes = { ' ]);
+            var hasAttr = false;
+            var attr = [ el, '.attributes = { ' ];
             _.each(this.attr, function(value, key) {
-                code.concat([ key, ': ', value, ', ']);
+                hasAttr = true;
+                attr = attr.concat([ key, ': ', value.jsVal(), ', ']);
             });
-            code.push('};');
+            attr.push('}; ');
+            if (hasAttr)
+                code.push(attr.join(''));
 
             /* Child Elements */
+            var hasChild = false;
+            var child_code = [ el, '.children=[' ];
             _.each(this.children, function(child) {
-                var child_code = [ 
-                    el, '.children.push((',
-                        child.js(level + 1),
-                    ')());',
-                ];
-                code.push(child_code.join(''));
+                hasChild = true;
+                child_code.push('(');
+                child_code.push(child.js(level + 1));
+                child_code.push(')(), ');
             });
+            child_code.push(']; ');
+            if (hasChild)
+                code.push(child_code.join(''));
 
             /* Return statement */
-            code.concat(['return ', el, ';' ]);
-            code.push('}');
+            code.push([ 'return ', el, '; ' ].join(''));
+            code.push('} ');
 
             return code.join('');;
-        },
-
-        print: function() {
-            return "Element " + this.element;
-        },
-
-        open:  function() { 
-            var el_str = this.element;
-
-            var attr_list = [ ];
-            _.each(this.attr, function(val_str, key) {
-                attr_list.push(key + '="' + val_str.text + '"');
-            });
-
-            if (attr_list.length)
-                el_str = el_str + ' ' + attr_list.join(' ');
-            
-            return "<"  + el_str + ">"; 
-        },
-
-        close: function() { 
-            return "</" + this.element + ">"; 
         },
     };
 };
