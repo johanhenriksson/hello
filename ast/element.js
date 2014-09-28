@@ -13,9 +13,38 @@ var element = function(type)
         children: [ ],
         attr: { },
 
-        render: function(document) {
-            var element = document.createElement(this.element);
+        js: function(level) 
+        {
+            var el = 'el' + level;
 
+            /* Create element */
+            var code = [ 
+                'function() {', 
+                'var ', el, ' = Element.make({ element: "', this.element, '" });', 
+            ];
+
+            /* Element Attributes */
+            code.concat([ el, '.attributes = { ' ]);
+            _.each(this.attr, function(value, key) {
+                code.concat([ key, ': ', value, ', ']);
+            });
+            code.push('};');
+
+            /* Child Elements */
+            _.each(this.children, function(child) {
+                var child_code = [ 
+                    el, '.children.push((',
+                        child.js(level + 1),
+                    ')());',
+                ];
+                code.push(child_code.join(''));
+            });
+
+            /* Return statement */
+            code.concat(['return ', el, ';' ]);
+            code.push('}');
+
+            return code.join('');;
         },
 
         print: function() {
@@ -38,11 +67,6 @@ var element = function(type)
 
         close: function() { 
             return "</" + this.element + ">"; 
-        },
-
-        js: function() {
-            var f = function() {
-            };
         },
     };
 };

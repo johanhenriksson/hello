@@ -8,6 +8,13 @@ var string = function(text) {
         element: text,
         text: text,
 
+        js: function() {
+            var code = [
+                'function() { return Element.make({ element: "text", text: "', this.text, '" }); }',
+            ];
+            return code.join('');
+        },
+
         print: function() {
             return "Text '" + this.text + "'";
         },
