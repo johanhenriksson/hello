@@ -18,8 +18,8 @@ function print_ast(ast, level) {
         space += " ";
 
     /* Print node */
-    if (ast.print)
-        console.log(space + ast.print());
+    if (ast.open)
+        console.log(space + ast.open());
 
     /* Print children */
     if (ast.children !== undefined) {
@@ -27,6 +27,9 @@ function print_ast(ast, level) {
             print_ast(child, level + 1);
         });
     }
+
+    if (ast.close)
+        console.log(space + ast.close());
 }
 
 /* Perform async compilation */

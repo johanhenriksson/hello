@@ -5,6 +5,12 @@ html {
     body {
         div { class="clear" }
         div {
+            table { 
+                tr {
+                    td label "Input:"
+                    td input 
+                }
+            }
             ul {
                 li "Item 1"
                 li "Item 2"

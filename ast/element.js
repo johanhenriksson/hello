@@ -1,3 +1,6 @@
+$ = require('jquery');
+_ = require('underscore');
+
 /*
  * AST Node
  * Html Element
@@ -9,6 +12,11 @@ var element = function(type)
         element: type,
         children: [ ],
         attr: { },
+
+        render: function(document) {
+            var element = document.createElement(this.element);
+
+        },
 
         print: function() {
             return "Element " + this.element;
@@ -30,6 +38,11 @@ var element = function(type)
 
         close: function() { 
             return "</" + this.element + ">"; 
+        },
+
+        js: function() {
+            var f = function() {
+            };
         },
     };
 };
