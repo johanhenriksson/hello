@@ -10,7 +10,11 @@ var string = function(text) {
 
         js: function() {
             var code = [
-                'function() { return Element.make({ element: "text", text: "', this.text, '" }); }',
+                'function() { ',
+                'var el = Element.make("text"); ',
+                'el.text="', this.text, '"; ',
+                'return el; ',
+                '}',
             ];
             return code.join('');
         },

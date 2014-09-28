@@ -1,4 +1,5 @@
 _ = require('underscore');
+$ = require('jquery');
 
 /** Html Element */
 var Element = {
@@ -17,11 +18,16 @@ var Element = {
         return this;
     },
 
-    render: function() {
+    render: function(document) 
+    {
+        if (this.element == 'text')
+            return $(document.createTextNode(this.text));
+
         var elem = $(document.createElement(this.element));
-        elem.attr(this.attr);
+
+        elem.attr(this.attributes);
         _.each(this.children, function(child) {
-            elem.append(child.render());
+            elem.append(child.render(document));
         });
         return elem;
     },

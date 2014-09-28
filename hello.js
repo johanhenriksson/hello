@@ -36,5 +36,9 @@ function print_ast(ast, level) {
 scan.read(function(tokens) {
     /* Parse */
     var ast = parser.parse(tokens);
-    console.log(ast.js(0));
+    var code = [
+        "var Element = require('./element.js'); ",
+        'module.exports = ', ast.js(), ';',
+     ];
+    console.log(code.join(''));
 });
